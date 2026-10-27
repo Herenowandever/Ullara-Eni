@@ -4,9 +4,9 @@ import { useT, LangSwitch } from '../lib/i18n'
 import type { Role } from '../supabase'
 
 const NAV: Record<Role, string[]> = {
-  employee: ['/', '/history'],
-  supervisor: ['/', '/crew', '/history'],
-  admin: ['/', '/crew', '/admin', '/admin/team', '/admin/shifts', '/admin/offices', '/admin/reports', '/admin/activity', '/admin/settings'],
+  employee: ['/', '/history', '/account'],
+  supervisor: ['/', '/crew', '/history', '/account'],
+  admin: ['/', '/crew', '/admin', '/admin/team', '/admin/shifts', '/admin/offices', '/admin/reports', '/admin/activity', '/admin/settings', '/account'],
 }
 
 const LABEL: Record<string, string> = {
@@ -20,6 +20,7 @@ const LABEL: Record<string, string> = {
   '/admin/reports': 'nav.reports',
   '/admin/activity': 'nav.activity',
   '/admin/settings': 'nav.company',
+  '/account': 'nav.account',
 }
 
 export function Brand({ sub }: { sub?: string }) {
@@ -45,7 +46,7 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
       <header className="topbar">
         <Brand sub={company?.name} />
         <div className="row">
-          <span className="small muted who">{profile?.full_name}</span>
+          <a className="small who who-link" href="#/account">{profile?.full_name}</a>
           <LangSwitch />
           <button className="btn ghost" onClick={signOut}>{t('signOut')}</button>
         </div>

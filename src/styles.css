@@ -236,3 +236,11 @@ input[type="date"], input[type="month"] { width: auto; }
 .login-card dd { margin: 0; font-family: var(--f-mono); font-size: 1.3rem; letter-spacing: 0.08em; }
 .pin-panel { display: grid; gap: 10px; background: var(--sunk); border-radius: 10px; padding: 12px; }
 .legal-links { text-align: center; }
+
+/* Account */
+.who-link { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.acc-list { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; }
+.acc-list dt { color: var(--muted); font-size: 0.85rem; }
+.acc-list dd { margin: 0; }
+.danger-zone { border-color: var(--bad-soft); }
+.btn.danger { background: var(--bad); color: var(--surface); border-color: var(--bad); }

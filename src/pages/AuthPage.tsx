@@ -36,7 +36,18 @@ export function AuthPage() {
   const [pin, setPin] = useState('')
   const [busy, setBusy] = useState(false)
   const [google, setGoogle] = useState(false)
-  const [msg, setMsg] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null)
+  const [msg, setMsg] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(() => {
+    try {
+      const n = sessionStorage.getItem('ullara_notice')
+      if (n) {
+        sessionStorage.removeItem('ullara_notice')
+        return { tone: 'ok', text: n }
+      }
+    } catch {
+      /* ignore */
+    }
+    return null
+  })
 
   useEffect(() => {
     authProviders().then((p) => setGoogle(p.google))

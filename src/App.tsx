@@ -16,6 +16,7 @@ import { QrScreen } from './pages/admin/QrScreen'
 import { ReportsPage } from './pages/admin/ReportsPage'
 import { SettingsPage } from './pages/admin/SettingsPage'
 import { ActivityPage } from './pages/admin/ActivityPage'
+import { AccountPage } from './pages/AccountPage'
 import { PendingScreen, MfaChallenge, MfaSetup } from './pages/Security'
 
 export function App() {
@@ -91,6 +92,7 @@ export function App() {
 
   let page
   if (p === '/history') page = <HistoryPage />
+  else if (p === '/account') page = <AccountPage />
   else if (canCrew && p === '/crew') page = <CrewPage />
   else if (isAdmin && p === '/admin') page = <AttendancePage />
   else if (isAdmin && p === '/admin/team') page = <TeamPage />
