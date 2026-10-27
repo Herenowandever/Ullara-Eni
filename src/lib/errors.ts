@@ -37,6 +37,9 @@ export function friendly(err: unknown): Friendly {
     return { text: tr(key, vars), suggestQr: QR_HELPS.has(first.trim()) }
   }
   if (ENGLISH_ONLY[code]) return { text: ENGLISH_ONLY[code] }
+  if (/^(Load failed|Failed to fetch|NetworkError|Network request failed)/i.test(raw.trim())) {
+    return { text: tr('err.OFFLINE') }
+  }
   if (/column .* does not exist|function .* does not exist|Could not find the function/i.test(raw)) {
     return { text: 'The database needs an update. Run the newest file in supabase/migrations in the Supabase SQL editor, then reload.' }
   }

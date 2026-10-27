@@ -339,6 +339,11 @@ const D: Record<string, Entry> = {
     'ईमेल और पासवर्ड मेल नहीं खाते। जाँचकर फिर कोशिश करें।',
     'ಇಮೇಲ್ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   ],
+  'err.OFFLINE': [
+    "Couldn't reach Ullara-Eni's server. Check your internet connection and try again. If it keeps happening, tell your admin.",
+    'Ullara-Eni के सर्वर से जुड़ नहीं पाए। इंटरनेट जाँचकर फिर कोशिश करें। बार-बार हो तो एडमिन को बताएँ।',
+    'Ullara-Eni ಸರ್ವರ್ ಸಂಪರ್ಕಿಸಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಮತ್ತೆ ಮತ್ತೆ ಆದರೆ ಅಡ್ಮಿನ್‌ಗೆ ತಿಳಿಸಿ.',
+  ],
   'err.GENERIC': [
     'Something went wrong. Check your connection and try again.',
     'कुछ गड़बड़ हुई। इंटरनेट जाँचकर फिर कोशिश करें।',

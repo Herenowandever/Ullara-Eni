@@ -40,7 +40,19 @@ export const configError = checkConfig()
 export const isConfigured = configError === null
 
 // Keep only https://<project>.supabase.co, dropping anything pasted after it such as /rest/v1/.
-const baseUrl = isConfigured ? new URL(url).origin : 'https://not-configured.supabase.co'
+const directUrl = isConfigured ? new URL(url).origin : 'https://not-configured.supabase.co'
+
+// On the live site, talk to Supabase through our own address (/sb, set up in vercel.json),
+// so phones never contact supabase.co directly. This keeps the app working if an internet
+// provider blocks Supabase, as some Indian providers did in early 2026.
+// Live updates (websockets) can't go through this route, so the admin board falls back to
+// refreshing every two minutes. Set VITE_SUPABASE_PROXY=off to connect directly instead.
+const useProxy =
+  isConfigured &&
+  import.meta.env.VITE_SUPABASE_PROXY !== 'off' &&
+  typeof window !== 'undefined' &&
+  /\.vercel\.app$/.test(window.location.hostname)
+const baseUrl = useProxy ? `${window.location.origin}/sb` : directUrl
 
 export const supabase = createClient(baseUrl, isConfigured ? key : 'not-configured', {
   auth: { persistSession: true, autoRefreshToken: true },
