@@ -235,3 +235,4 @@ input[type="date"], input[type="month"] { width: auto; }
 .login-card dt { color: var(--muted); font-size: 0.82rem; }
 .login-card dd { margin: 0; font-family: var(--f-mono); font-size: 1.3rem; letter-spacing: 0.08em; }
 .pin-panel { display: grid; gap: 10px; background: var(--sunk); border-radius: 10px; padding: 12px; }
+.legal-links { text-align: center; }

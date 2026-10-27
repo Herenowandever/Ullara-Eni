@@ -184,6 +184,9 @@ export function AuthPage() {
         {mode === 'signup' && <p className="small muted">{t('auth.afterCreate')}</p>}
         {(mode === 'signin' || mode === 'signup') && <p className="small muted">{t('auth.googleNote')}</p>}
       </form>
+      <p className="small muted legal-links">
+        <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a>
+      </p>
     </div>
   )
 }
