@@ -4,6 +4,7 @@ import { useMember } from '../../lib/session'
 import { useAsync, must } from '../../lib/useAsync'
 import { friendly } from '../../lib/errors'
 import { Avatar, Loading, Note, copyText } from '../../components/ui'
+import { randomPin, weakPin } from '../../lib/pin'
 
 export function TeamPage() {
   const { company, userId, refresh } = useMember()
@@ -50,6 +51,10 @@ export function TeamPage() {
           </div>
         </div>
         <div className="small muted break">{link}</div>
+        <p className="small muted">
+          Workers without email: open their row below and tap <strong>Set up app login</strong>. They sign in with company code{' '}
+          <span className="mono">{company.login_code}</span>, their worker ID and a PIN.
+        </p>
         {!confirmNew ? (
           <button className="linkish" onClick={() => setConfirmNew(true)}>Create a new code</button>
         ) : (
@@ -152,12 +157,13 @@ function MemberRow({ p, shifts, offices, isMe, onSaved, onRemoved }: {
           <div>
             {p.full_name}
             {isMe && <span className="muted small"> · you</span>}
-            {!p.has_login && <span className="muted small"> · no phone</span>}
+            {!p.has_login && <span className="muted small"> · no app login</span>}
+            {p.pin_login && <span className="muted small"> · PIN login</span>}
             {p.role !== 'employee' && <span className="muted small"> · {p.role}</span>}
             {!p.active && <span className="muted small"> · deactivated</span>}
           </div>
           <div className="meta">
-            {[p.job_title, siteName,
+            {[p.employee_no != null ? `ID ${p.employee_no}` : null, p.job_title, siteName,
               p.pay_type === 'monthly'
                 ? (p.monthly_salary != null ? `₹${Number(p.monthly_salary).toLocaleString('en-IN')}/month` : 'salary not set')
                 : (p.daily_wage != null ? `₹${p.daily_wage}/day` : null)].filter(Boolean).join(' · ') || 'No details yet'}
@@ -167,7 +173,7 @@ function MemberRow({ p, shifts, offices, isMe, onSaved, onRemoved }: {
       <details className="member-details">
         <summary>Edit</summary>
         <div className="member-edit">
-          {!p.has_login && <label className="field">Name<input id={`name-${p.id}`} value={name} onChange={(e) => setName(e.target.value)} /></label>}
+          {(!p.has_login || p.pin_login) && <label className="field">Name<input id={`name-${p.id}`} value={name} onChange={(e) => setName(e.target.value)} /></label>}
           <label className="field">Job title<input id={`title-${p.id}`} value={title} onChange={(e) => setTitle(e.target.value)} /></label>
           <label className="field">Site
             <select id={`site-${p.id}`} value={site} onChange={(e) => setSite(e.target.value)}>
@@ -205,6 +211,7 @@ function MemberRow({ p, shifts, offices, isMe, onSaved, onRemoved }: {
         {role === 'supervisor' && <p className="small muted">Supervisors mark attendance for everyone at their site. Pick a site above.</p>}
         <p className="small muted">Overtime left blank uses the company overtime rule from Company settings. Monthly salary is paid per day as salary ÷ days in the month, including weekly offs and holidays.</p>
       </details>
+      {!isMe && p.active && (!p.has_login || p.pin_login) && <PinLogin p={p} onDone={onSaved} />}
       {!isMe && !confirmRemove && (
         <button className="btn ghost small-btn remove-btn" onClick={() => setConfirmRemove(true)}>Remove</button>
       )}
@@ -245,7 +252,7 @@ function AddWorker({ shifts, offices, onAdded }: { shifts: Shift[]; offices: Off
     })
     if (error) setMsg({ tone: 'bad', text: friendly(error).text })
     else {
-      setMsg({ tone: 'ok', text: `${name} added. A supervisor or admin marks their attendance from the Crew page.` })
+      setMsg({ tone: 'ok', text: `${name} added. To let them use the app themselves, open their row above and tap Set up app login.` })
       setName('')
       setTitle('')
       onAdded()
@@ -254,8 +261,8 @@ function AddWorker({ shifts, offices, onAdded }: { shifts: Shift[]; offices: Off
 
   return (
     <form className="panel" onSubmit={submit}>
-      <h2>Add a worker without a phone</h2>
-      <p className="small muted">For labourers and staff who won't use the app themselves. Their site supervisor marks them in and out with a group photo.</p>
+      <h2>Add a worker</h2>
+      <p className="small muted">For labourers and staff without email. Their supervisor can mark them in with a group photo, or you can give them their own app login with a worker ID and PIN from their row above.</p>
       <div className="row">
         <label className="field">Full name<input id="aw-name" required value={name} onChange={(e) => setName(e.target.value)} /></label>
         <label className="field">Job title<input id="aw-title" value={title} placeholder="Mason, helper…" onChange={(e) => setTitle(e.target.value)} /></label>
@@ -353,5 +360,102 @@ function PendingRequests({ onChange, requireApproval }: { onChange: () => void; 
       {msg && <Note tone={msg.tone}>{msg.text}</Note>}
       {!requireApproval && <p className="small muted">Approval is switched off in Company settings, so new people join straight away.</p>}
     </section>
+  )
+}
+
+/** Admin sets up or resets a worker's Company code + Worker ID + PIN login. */
+function PinLogin({ p, onDone }: { p: Profile; onDone: () => void }) {
+  const { company } = useMember()
+  const [open, setOpen] = useState(false)
+  const [pin, setPin] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const [card, setCard] = useState<{ code: string; id: number; pin: string } | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  function start() {
+    setPin(randomPin())
+    setErr(null)
+    setCard(null)
+    setOpen(true)
+  }
+
+  async function save() {
+    if (weakPin(pin)) return setErr('Use 6 digits that are hard to guess, not 000000 or 123456.')
+    setBusy(true)
+    setErr(null)
+    const { data, error } = await supabase.functions.invoke('worker-login', { body: { member_id: p.id, pin } })
+    setBusy(false)
+    if (error) {
+      let code = error.message
+      try {
+        const ctx = (error as { context?: Response }).context
+        if (ctx) code = ((await ctx.json()) as { error?: string }).error ?? code
+      } catch {
+        /* keep message */
+      }
+      const known: Record<string, string> = {
+        WEAK_PIN: 'Use 6 digits that are hard to guess, not 000000 or 123456.',
+        NOT_ACTIVE: 'This person is removed or waiting for approval.',
+        HAS_OWN_LOGIN: 'This person signs in with their own email or Google, so they don\'t need a PIN.',
+      }
+      setErr(known[code] ?? friendly(new Error(code)).text)
+      return
+    }
+    const d = data as { employee_no: number; login_code: string }
+    setCard({ code: d.login_code ?? company.login_code, id: d.employee_no, pin })
+    setOpen(false)
+    onDone()
+  }
+
+  async function copy() {
+    if (!card) return
+    const text = `Ullara-Eni sign-in for ${p.full_name}\nOpen: ${window.location.origin}\nTap "Worker"\nCompany code: ${card.code}\nWorker ID: ${card.id}\nPIN: ${card.pin}`
+    setCopied(await copyText(text))
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="pin-area">
+      {!open && !card && (
+        <button className="btn small-btn" onClick={start}>{p.pin_login ? 'Reset PIN' : 'Set up app login (no email)'}</button>
+      )}
+      {open && (
+        <div className="pin-panel">
+          <div className="small">
+            {p.pin_login
+              ? `Choose a new PIN for ${p.full_name}. Their old PIN stops working.`
+              : `${p.full_name} will sign in with your company code, a worker ID and this PIN. No email or Google account needed.`}
+          </div>
+          <div className="row">
+            <label className="field">6-digit PIN
+              <input id={`pin-${p.id}`} className="mono code-input" inputMode="numeric" maxLength={6} value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+            </label>
+            <button className="btn ghost small-btn" type="button" onClick={() => setPin(randomPin())}>New random PIN</button>
+          </div>
+          {err && <Note tone="bad">{err}</Note>}
+          <div className="row">
+            <button className="btn primary" disabled={busy || pin.length !== 6} onClick={save}>{busy ? 'Saving…' : p.pin_login ? 'Save new PIN' : 'Create login'}</button>
+            <button className="btn" onClick={() => setOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {card && (
+        <div className="login-card">
+          <strong>Give these to {p.full_name}</strong>
+          <dl>
+            <dt>Company code</dt><dd>{card.code}</dd>
+            <dt>Worker ID</dt><dd>{card.id}</dd>
+            <dt>PIN</dt><dd>{card.pin}</dd>
+          </dl>
+          <p className="small">On the sign-in screen they tap <strong>Worker</strong> and enter these. You won't be able to see this PIN again; use Reset PIN if it's forgotten.</p>
+          <div className="row">
+            <button className="btn" onClick={copy}>{copied ? 'Copied' : 'Copy to send on WhatsApp'}</button>
+            <button className="btn ghost" onClick={() => setCard(null)}>Done</button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

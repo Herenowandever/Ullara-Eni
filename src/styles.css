@@ -225,3 +225,13 @@ input[type="date"], input[type="month"] { width: auto; }
   .pending-row { grid-template-columns: 40px minmax(0, 1fr); }
   .pending-row > .row.end { grid-column: 2; justify-content: flex-start; }
 }
+
+/* Sign-in */
+.google-btn { gap: 10px; background: var(--surface); }
+.or-line { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.8rem; }
+.or-line::before, .or-line::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.login-card { border: 2px dashed var(--accent); border-radius: 14px; padding: 16px; display: grid; gap: 8px; background: var(--accent-soft); }
+.login-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: baseline; }
+.login-card dt { color: var(--muted); font-size: 0.82rem; }
+.login-card dd { margin: 0; font-family: var(--f-mono); font-size: 1.3rem; letter-spacing: 0.08em; }
+.pin-panel { display: grid; gap: 10px; background: var(--sunk); border-radius: 10px; padding: 12px; }

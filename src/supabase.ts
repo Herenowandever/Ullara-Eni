@@ -51,12 +51,26 @@ const useProxy =
   isConfigured &&
   import.meta.env.VITE_SUPABASE_PROXY !== 'off' &&
   typeof window !== 'undefined' &&
-  /\.vercel\.app$/.test(window.location.hostname)
+  !/^(localhost|127\.|192\.168\.|10\.)/.test(window.location.hostname)
 const baseUrl = useProxy ? `${window.location.origin}/sb` : directUrl
 
 export const supabase = createClient(baseUrl, isConfigured ? key : 'not-configured', {
-  auth: { persistSession: true, autoRefreshToken: true },
+  // PKCE keeps sign-in codes out of the address bar's #, which the app uses for its pages.
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
 })
+
+/** Which sign-in methods are switched on in Supabase (used to show the Google button only when it works). */
+export async function authProviders(): Promise<{ google: boolean }> {
+  if (!isConfigured) return { google: false }
+  try {
+    const res = await fetch(`${baseUrl}/auth/v1/settings`, { headers: { apikey: key } })
+    if (!res.ok) return { google: false }
+    const data = (await res.json()) as { external?: Record<string, boolean> }
+    return { google: Boolean(data.external?.google) }
+  } catch {
+    return { google: false }
+  }
+}
 
 export type Role = 'admin' | 'supervisor' | 'employee'
 
@@ -76,6 +90,8 @@ export interface Profile {
   pay_type: 'daily' | 'monthly'
   monthly_salary: number | null
   approved: boolean
+  employee_no: number | null
+  pin_login: boolean
 }
 
 export interface Company {
@@ -94,10 +110,11 @@ export interface Company {
   require_approval: boolean
   photo_retention_days: number
   require_admin_mfa: boolean
+  login_code: string
 }
 
 export const COMPANY_COLS =
-  'id, name, timezone, join_code, weekly_offs, paid_weekly_off, paid_holidays, half_day_hours, ot_after_minutes, ot_multiplier, pay_cycle, week_starts, require_approval, photo_retention_days, require_admin_mfa'
+  'id, name, timezone, join_code, weekly_offs, paid_weekly_off, paid_holidays, half_day_hours, ot_after_minutes, ot_multiplier, pay_cycle, week_starts, require_approval, photo_retention_days, require_admin_mfa, login_code'
 
 export interface Shift {
   id: string
@@ -141,6 +158,6 @@ export type Method = 'gps' | 'qr' | 'crew' | 'manual'
 export const METHOD_LABEL: Record<Method, string> = { gps: 'GPS', qr: 'QR', crew: 'CREW', manual: 'MANUAL' }
 
 export const PROFILE_COLS =
-  'id, company_id, full_name, job_title, role, shift_id, active, consented_at, has_login, office_id, daily_wage, ot_hourly_rate, pay_type, monthly_salary, approved'
+  'id, company_id, full_name, job_title, role, shift_id, active, consented_at, has_login, office_id, daily_wage, ot_hourly_rate, pay_type, monthly_salary, approved, employee_no, pin_login'
 export const ATTENDANCE_COLS =
   'id, user_id, work_date, office_id, clock_in_at, clock_out_at, in_method, out_method, in_distance_m, selfie_path, shift_start, shift_end, is_late, edited_by, marked_by, group_photo_path, day_status'

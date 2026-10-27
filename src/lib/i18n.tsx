@@ -49,6 +49,27 @@ const D: Record<string, Entry> = {
     'अगर {email} का खाता है, तो पासवर्ड रीसेट लिंक भेज दिया गया है।',
     '{email} ಗೆ ಖಾತೆ ಇದ್ದರೆ, ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸುವ ಲಿಂಕ್ ಕಳುಹಿಸಲಾಗಿದೆ.',
   ],
+  'auth.worker': ['Worker', 'कर्मचारी', 'ಕಾರ್ಮಿಕ'],
+  'auth.google': ['Continue with Google', 'Google से जारी रखें', 'Google ಮೂಲಕ ಮುಂದುವರಿಯಿರಿ'],
+  'auth.or': ['or', 'या', 'ಅಥವಾ'],
+  'auth.coCode': ['Company code', 'कंपनी कोड', 'ಕಂಪನಿ ಕೋಡ್'],
+  'auth.workerId': ['Worker ID', 'कर्मचारी ID', 'ಕಾರ್ಮಿಕ ID'],
+  'auth.pin': ['6-digit PIN', '6 अंकों का PIN', '6 ಅಂಕಿಯ PIN'],
+  'auth.workerHint': [
+    'Get these from your admin or supervisor. No email needed.',
+    'ये आपके एडमिन या सुपरवाइज़र से मिलेंगे। ईमेल की ज़रूरत नहीं।',
+    'ಇವು ನಿಮ್ಮ ಅಡ್ಮಿನ್ ಅಥವಾ ಸೂಪರ್‌ವೈಸರ್ ಬಳಿ ಸಿಗುತ್ತವೆ. ಇಮೇಲ್ ಬೇಕಿಲ್ಲ.',
+  ],
+  'auth.workerWrong': [
+    "That company code, worker ID or PIN didn't match. Check them, or ask your admin to reset your PIN.",
+    'कंपनी कोड, कर्मचारी ID या PIN मेल नहीं खाया। जाँचें, या एडमिन से PIN रीसेट करने को कहें।',
+    'ಕಂಪನಿ ಕೋಡ್, ಕಾರ್ಮಿಕ ID ಅಥವಾ PIN ಹೊಂದಿಕೆಯಾಗಲಿಲ್ಲ. ಪರಿಶೀಲಿಸಿ, ಅಥವಾ PIN ಮರುಹೊಂದಿಸಲು ಅಡ್ಮಿನ್‌ಗೆ ಹೇಳಿ.',
+  ],
+  'auth.googleNote': [
+    'Workers without email: use the Worker tab.',
+    'बिना ईमेल वाले कर्मचारी: "कर्मचारी" टैब इस्तेमाल करें।',
+    'ಇಮೇಲ್ ಇಲ್ಲದ ಕಾರ್ಮಿಕರು: "ಕಾರ್ಮಿಕ" ಟ್ಯಾಬ್ ಬಳಸಿ.',
+  ],
   'auth.afterCreate': [
     "After creating your account you'll set up your company or join one with a code from your admin.",
     'खाता बनाने के बाद आप अपनी कंपनी सेट करेंगे या एडमिन से मिले कोड से जुड़ेंगे।',
